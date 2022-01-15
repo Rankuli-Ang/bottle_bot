@@ -1,16 +1,15 @@
 import time
-import sqlite3
-
-conn = sqlite3.connect(r'resources/movements.db')
-cur = conn.cursor()
 
 
 class Bot:
 
-    def __init__(self, x: int, y: int):
+    def __init__(self, number: int, x: int, y: int):
+        self.number = number
         self.x: int = x
         self.y: int = y
-        self.moves = False
+        self.target_x = None
+        self.target_y = None
+        self.is_moving = False
 
     def step_x(self, new_x: int) -> None:
         if new_x == self.x:
@@ -37,9 +36,12 @@ class Bot:
             time.sleep(0.01)
 
     def move_to(self, new_x: int, new_y: int):
-        self.moves = True
+        self.is_moving = True
         while self.x != new_x and self.y != new_y:
             self.step_x(new_x)
             self.step_y(new_y)
-        self.moves = False
+        self.is_moving = False
 
+    def set_target(self, target_x: int, target_y: int) -> None:
+        self.target_x = target_x
+        self.target_y = target_y
