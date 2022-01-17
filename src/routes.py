@@ -2,26 +2,35 @@ from bottle import route
 import json
 import sqlite3
 import datetime
-
-from .processor import bot
-
-
-def coordinates_of_bot(bot) -> str:
-    if bot.is_moving:
-        status = "bot is moving"
-    else:
-        status = "bot stopped"
-    return json.dumps({"timestamp": datetime.datetime.utcnow().isoformat(),
-                       "number": bot.number, "x": bot.x, "y": bot.y, "status": status})
+import time
 
 
-@route('/coordinates')
-def coordinates():
-    return coordinates_of_bot(bot)
+def get_bots() -> str:
+    conn = sqlite3.connect(r'src/resources/bots.db')
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM bots""")
+    bots_raw = cur.fetchall()
+    bots_output = []
+    for bot in bots_raw:
+        id = bot[0]
+        x = bot[1]
+        y = bot[2]
+        status = bot[3]
+        bot_output = {"id": id, "x": x, "y": y, "status": status}
+        bots_output.append(bot_output)
+    return json.dumps({"timestamp": int(time.time()), "bots": bots_output})
 
 
-@route('/coordinates/<new_x:int>/<new_y:int>', method="POST")
-def move(new_x, new_y):
+@route('/bots')
+def bots():
+    return get_bots()
+
+
+@route('/<bot: int>/<new_x:int>/<new_y:int>', method="POST")
+def move(bot, new_x, new_y):
+    conn = sqlite3.connect(r'src/resources/bots.db')
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM bots""")
     if bot.is_moving is True:
         return "Bot is already is_moving"
     else:
