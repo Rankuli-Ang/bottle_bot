@@ -1,41 +1,57 @@
 from bottle import route
+from src.bot import Bot
 import json
+from src.processor import Processor
 import sqlite3
 import time
 
+processor = Processor()
 
-def get_bots() -> str:
+
+@route('/bot/<bot_number:int>', method="POST")
+def get_bot(bot_number):
+    conn = sqlite3.connect(r'resources/bots.db')
+    cur = conn.cursor()
+    cur.execute("""SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1  """, (bot_number,))
+    bot_stats = cur.fetchone()
+    if bot_stats is None:
+        return json.dumps({'bot': 'is not exist'})
+    processor.add_bot(bot_stats)
+    current_bot = processor.get_current_bot(bot_stats[0])
+    current_bot_output = {"id": current_bot.number,
+                          "x": current_bot.get_x(), "y": current_bot.get_y(),
+                          "status": processor.current_bot_is_moving(current_bot)}
+    return json.dumps({"timestamp": time.time(), "bots": current_bot_output})
+
+
+@route('/bots')
+def get_bots():
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
     cur.execute("""SELECT * FROM bots""")
     bots_raw = cur.fetchall()
     bots_output = []
-    for bot in bots_raw:
-        id = bot[0]
-        x = bot[1]
-        y = bot[2]
-        if bot[1] == bot[3] and bot[2] == bot[4]:  # change it later
-            status = 'stopped'
-        else:
-            status = 'is moving'
-        bot_output = {"id": id, "x": x, "y": y, "status": status}
-        bots_output.append(bot_output)
-    return json.dumps({"timestamp": int(time.time()), "bots": bots_output})  # how to correct this
+    for bot_stats in bots_raw:
+        processor.add_bot(bot_stats)
+        current_bot = processor.get_current_bot(bot_stats[0])
+        current_bot_output = {"id": current_bot.number,
+                              "x": current_bot.get_x(), "y": current_bot.get_y(),
+                              "status": processor.current_bot_is_moving(current_bot)}
+        bots_output.append(current_bot_output)
+    return json.dumps({"timestamp": time.time(), "bots": bots_output})
 
 
-@route('/bots')
-def bots():
-    return get_bots()
-
-
-@route('/move/<bot_number:int>/<new_x:int>/<new_y:int>', method="POST")
-def move(bot_number, new_x, new_y):
+@route('/move/<bot_number:int>/<target_x:int>/<target_y:int>', method="POST")
+def move(bot_number, target_x, target_y):
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
-    cur.execute("""SELECT * FROM bots ORDER BY id DESC LIMIT 1 WHERE id = ? """, bot_number)
-    bot = cur.fetchone()
-    print(bot)
-    data = (new_x, new_y, new_x, new_y, bot_number)
-    cur.execute("""UPDATE bots SET (x = ?, y = ?, target_x = ?, target_y = ?), WHERE id = ?""", data)
-    conn.commit()
-
+    cur.execute("""SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1  """, (bot_number,))
+    bot_stats = cur.fetchone()
+    if bot_stats is None:
+        return json.dumps({'bot': 'is not exist'})
+    processor.add_bot(bot_stats)
+    current_bot = processor.get_current_bot(bot_stats[0])
+    if current_bot.is_moving:
+        return processor.current_bot_is_moving(current_bot)
+    processor.bot_move(current_bot, target_x, target_y)
+    return json.dumps({"movement": "is over"})

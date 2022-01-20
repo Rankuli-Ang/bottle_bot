@@ -4,12 +4,32 @@ class Bot:
     """A unit capable of changing coordinates
     depending on a given target."""
 
-    def __init__(self, number: int, x: int, y: int):
+    def __init__(self, number: int, x: int, y: int, target_x: int, target_y: int):
         self.number = number
         self._x: int = x
         self._y: int = y
-        self._target_x = None
-        self._target_y = None
+        self._target_x = target_x
+        self._target_y = target_y
+
+    def get_x(self) -> int:
+        """Gets 'x' coordinate of the bot."""
+        return self._x
+
+    def set_x(self, new_x: int) -> None:
+        """Set 'x' coordinate of the bot."""
+        self._x = new_x
+
+    x = property(get_x, set_x)
+
+    def get_y(self) -> int:
+        """Gets 'y' coordinate of the bot."""
+        return self._y
+
+    def set_y(self, new_y: int) -> None:
+        """Set 'y' coordinate of the bot."""
+        self._y = new_y
+
+    y = property(get_y, set_y)
 
     def get_target_x(self) -> int:
         """Gets target of 'x' coordinate of the bot."""
@@ -32,13 +52,13 @@ class Bot:
     target_y = property(get_target_y, set_target_y)
 
     @property
-    def is_moving(self) -> str:
+    def is_moving(self) -> bool:
         """Compares coordinates and target,
         returns 'stopped' if then equals
         and 'is moving' if its not."""
         if self._target_x == self._x and \
                 self._target_y == self._y:
-            return 'stopped'
+            return False
         else:
-            return 'is moving'
+            return True
 

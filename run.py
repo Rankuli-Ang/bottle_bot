@@ -1,5 +1,5 @@
 from bottle import run, PasteServer
-from src import routes, bot
+from src import bot, processor, routes
 
 
 if __name__ == "__main__":
