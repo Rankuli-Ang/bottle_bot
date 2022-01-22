@@ -1,5 +1,4 @@
 from bottle import route
-from src.bot import Bot
 import json
 from src.processor import Processor
 import sqlite3
@@ -8,8 +7,21 @@ import time
 processor = Processor()
 
 
+@route('/')
+def get_tutorial():
+    """Displays all commands."""
+    data = {"commands": [
+        {'bot/bot_number': 'returns bot statistics'},
+        {'bots': 'returns statistics for all bots'},
+        {'/move/bot_number/target_x/target_y': 'moves bot with a given values'},
+        {'create/x/y': 'creates bot with a given values'},
+        {'delete/bot_number': 'deletes bot with a given number'}]}
+    return json.dumps(data)
+
+
 @route('/bot/<bot_number:int>', method="POST")
 def get_bot(bot_number):
+    """Display bot stat with given number."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
     cur.execute("""SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1  """, (bot_number,))
@@ -26,6 +38,7 @@ def get_bot(bot_number):
 
 @route('/bots')
 def get_bots():
+    """Displays stat for all bots."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
     cur.execute("""SELECT * FROM bots""")
@@ -43,6 +56,7 @@ def get_bots():
 
 @route('/move/<bot_number:int>/<target_x:int>/<target_y:int>', method="POST")
 def move(bot_number, target_x, target_y):
+    """Moves bot with a given values."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
     cur.execute("""SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1  """, (bot_number,))
@@ -55,3 +69,13 @@ def move(bot_number, target_x, target_y):
         return processor.current_bot_is_moving(current_bot)
     processor.bot_move(current_bot, target_x, target_y)
     return json.dumps({"movement": "is over"})
+
+
+@route('/create/<x:int>/<y:int>', method='POST')  # doesn't work yet
+def create_bot(x, y):
+    return json.dumps(processor.create_bot(x, y))
+
+
+@route('delete/<bot_number:int>', method='POST')  # doesn't work yet
+def delete_bot(bot_number):
+    return json.dumps(processor.delete_bot(bot_number))

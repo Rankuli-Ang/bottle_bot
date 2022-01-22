@@ -62,3 +62,8 @@ class Bot:
         else:
             return True
 
+    @property
+    def stats(self) -> tuple:
+        """Returns all characteristics of the bot."""
+        return self.number, self.x, self.y, self.target_x, self.target_y
+
