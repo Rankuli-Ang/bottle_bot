@@ -5,11 +5,15 @@ class Bot:
     depending on a given target."""
 
     def __init__(self, number: int, x: int, y: int, target_x: int, target_y: int):
-        self.number = number
+        self._number = number
         self._x: int = x
         self._y: int = y
         self._target_x = target_x
         self._target_y = target_y
+
+    def get_number(self) -> int:
+        """Returns number of the bot."""
+        return self._number
 
     def get_x(self) -> int:
         """Gets 'x' coordinate of the bot."""
@@ -64,6 +68,10 @@ class Bot:
 
     @property
     def stats(self) -> tuple:
-        """Returns all characteristics of the bot."""
-        return self.number, self.x, self.y, self.target_x, self.target_y
+        """Returns characteristics of the bot."""
+        return (self.get_number(),
+                self.get_x(), self.get_y(),
+                self.get_target_x(), self.get_target_y())
+
+
 
