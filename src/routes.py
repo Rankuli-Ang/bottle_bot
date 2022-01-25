@@ -4,7 +4,7 @@ from src.processor import Processor
 import sqlite3
 import time
 
-processor = Processor()
+proc = Processor()
 
 
 @route('/')
@@ -16,7 +16,7 @@ def get_tutorial():
         {'/move/bot_number/target_x/target_y': 'moves bot with a given values'},
         {'create/x/y': 'creates bot with a given values'},
         {'delete/bot_number': 'deletes bot with a given number'},
-        {'delete_all': 'deletes all bots'}]}
+        {'delete_all': 'deletes all bots (only if everyone is stopped)'}]}
     return json.dumps(data)
 
 
@@ -29,14 +29,13 @@ def get_bot(bot_number):
     bot_stats = cur.fetchone()
     if bot_stats is None:
         return json.dumps({'bot': 'is not exist'})
-    processor.add_bot(bot_stats)
-    current_bot = processor.get_current_bot(bot_stats[0])
-    current_bot_output = processor.current_bot_stats(current_bot)
+    current_bot = proc.get_current_bot_instance(bot_stats[0])
+    current_bot_output = proc.current_bot_stats(current_bot)
     return json.dumps({"timestamp": time.time(), "bot": current_bot_output})
 
 
 @route('/bots')
-def get_bots():
+def get_bots():  # should I unite get_bot and get_bots to one function?
     """Displays stat for all bots."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
@@ -46,9 +45,8 @@ def get_bots():
         return json.dumps({"timestamp": time.time(), 'list of bots': 'is empty'})
     bots_output = []
     for bot_stats in bots_raw:
-        processor.add_bot(bot_stats)
-        current_bot = processor.get_current_bot(bot_stats[0])
-        current_bot_output = processor.current_bot_stats(current_bot)
+        current_bot = proc.get_current_bot_instance(bot_stats[0])
+        current_bot_output = proc.current_bot_stats(current_bot)
         bots_output.append(current_bot_output)
     return json.dumps({"timestamp": time.time(), "bots": bots_output})
 
@@ -62,25 +60,25 @@ def move(bot_number, target_x, target_y):
     bot_stats = cur.fetchone()
     if bot_stats is None:
         return json.dumps({'bot': 'is not exist'})
-    processor.add_bot(bot_stats)
-    current_bot = processor.get_current_bot(bot_stats[0])
+    proc.add_bot(bot_stats)
+    current_bot = proc.get_current_bot_instance(bot_stats[0])
     if current_bot.is_moving:
-        return json.dumps({'bot': processor.current_bot_is_moving(current_bot)})
-    processor.bot_move(current_bot, target_x, target_y)
+        return json.dumps({'bot': proc.current_bot_is_moving(current_bot)})
+    proc.bot_move(current_bot, target_x, target_y)
     return json.dumps({"movement": "is over"})
 
 
 @route('/create/<x:int>/<y:int>', method='POST')
 def create_bot(x, y):
-    return json.dumps(processor.create_bot_db(x, y))
+    return json.dumps(proc.create_bot_db(x, y))
 
 
 @route('/delete/<bot_number:int>', method='POST')
 def delete_bot(bot_number):
-    return json.dumps(processor.delete_bot_db(bot_number))
+    return json.dumps(proc.delete_bot_db(bot_number))
 
 
 @route('/delete_all')
 def delete_all_bots():
-    return processor.delete_all_bots_db()
+    return json.dumps(proc.delete_all_bots_db())
 
