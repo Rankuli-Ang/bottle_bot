@@ -1,9 +1,16 @@
 from bottle import run, PasteServer
+import configparser
 from src import bot, processor, routes
 import sqlite3
 
+
+config = configparser.ConfigParser()
+config.read('src/config.ini')
+DB = config.get('DATABASE', 'db')
+print(type(DB))
+
 if __name__ == "__main__":
-    conn = sqlite3.connect(r'resources/bots.db')
+    conn = sqlite3.connect(DB)
     cur = conn.cursor()
     cur.execute('''CREATE TABLE IF NOT EXISTS bots(
     id INT PRIMARY KEY, 

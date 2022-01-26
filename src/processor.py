@@ -6,7 +6,8 @@ import time
 class Processor:
     """Processes movements of the bots."""
 
-    def __init__(self):
+    def __init__(self, db):
+        self.db = db
         self.bots = []
 
     def add_bot(self, new_bot_stats: tuple) -> None:
@@ -53,7 +54,7 @@ class Processor:
         self.add_bot(new_bot_data)
         cur.execute('''INSERT INTO bots(id, x,y,target_x,target_y) VALUES(?,?,?,?,?)''', new_bot_data)
         conn.commit()
-        return {new_number: 'is created'}
+        return {'bot': 'is created', 'bot number': new_number}
 
     def delete_bot_db(self, bot_number: int) -> dict:
         """Deletes bot with given number."""
