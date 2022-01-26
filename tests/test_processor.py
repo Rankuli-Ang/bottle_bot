@@ -11,29 +11,35 @@ class TestProcessor(unittest.TestCase):
     def test_create_bot_db(self) -> None:
         """Checks creates bot function
         and addition to the database."""
-        output_dict = proc.create_bot_db(DB, 10, 10)
+        output_dict = proc.create_bot_db(DB, 10, 10)  # to add db as arg
         bot_number = output_dict['bot number']
-
-
-
+        new_bot = proc.get_current_bot_instance(bot_number)
         self.assertIn(new_bot, proc.bots)
-        cur.execute('''SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1 ''', (new_number,))
+
+        cur.execute('''SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1 ''', (bot_number,))
         bot_stats = cur.fetchone()
-        self.assertEqual(new_bot_data, bot_stats)
+        self.assertEqual(new_bot.stats, bot_stats)
+
+    def test_move(self) -> None:
+        target_x = 3
+        target_y = 3
+
 
     def test_delete_bot_db(self) -> None:
         """Checks deletion bot from the database."""
+        proc.delete_bot_db(1)
         cur.execute('''SELECT * FROM bots WHERE id = 1 ORDER BY id DESC LIMIT 1 ''')
-        deleting_bot_stats = cur.fetchone()
-        if not deleting_bot_stats:
-            return {'bot': 'does not exists'}
-        deleting_bot = self.get_current_bot_instance(bot_number)
-        if deleting_bot.is_moving:
-            return {'ERROR': 'You cannot bot while its moving'}
-        self.delete_bot(bot_number)
-        cur.execute('''DELETE FROM bots WHERE id = ?''', (bot_number,))
-        conn.commit()
-        return {bot_number: 'is deleted'}
+        deleted_bot = cur.fetchone()
+        self.assertIsNone(deleted_bot)
+        self.assertIsNone(proc.get_current_bot_instance(1))
+
+    def test_delete_all_bots_db(self) -> None:
+        """Checks deletion all bots from the database."""
+        proc.delete_all_bots_db()
+        cur.execute('''SELECT * FROM bots''')
+        all_data = cur.fetchall()
+        self.assertIsNone(all_data)
+        self.assertEqual(proc.bots, [])
 
 
 if __name__ == '__main__':
@@ -44,6 +50,7 @@ if __name__ == '__main__':
     conn = sqlite3.connect(DB)
     cur = conn.cursor()
     cur.execute('''DELETE * FROM bots''')
+
     conn.commit()
     cur.execute('''CREATE TABLE IF NOT EXISTS bots(
         id INT PRIMARY KEY, 

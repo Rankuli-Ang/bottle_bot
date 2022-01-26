@@ -7,7 +7,6 @@ import sqlite3
 config = configparser.ConfigParser()
 config.read("src/config.ini")
 DB = config.get('DATABASE', 'db')
-print(type(DB))
 
 if __name__ == "__main__":
     conn = sqlite3.connect(DB)
