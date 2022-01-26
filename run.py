@@ -5,7 +5,7 @@ import sqlite3
 
 
 config = configparser.ConfigParser()
-config.read('src/config.ini')
+config.read("src/config.ini")
 DB = config.get('DATABASE', 'db')
 print(type(DB))
 

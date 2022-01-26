@@ -5,10 +5,7 @@ from src.processor import Processor
 import sqlite3
 import time
 
-config = configparser.ConfigParser()
-config.read('src/config.ini')
-DB = config.get('DATABASE', 'db')
-proc = Processor(DB)  # It's not good to create proc here, but I can't come up better decision
+proc = Processor()  # It's not good to create proc here, but I can't come up better decision
 
 
 @route('/')

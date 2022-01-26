@@ -6,8 +6,7 @@ import time
 class Processor:
     """Processes movements of the bots."""
 
-    def __init__(self, db):
-        self.db = db
+    def __init__(self):
         self.bots = []
 
     def add_bot(self, new_bot_stats: tuple) -> None:

@@ -12,7 +12,7 @@ class TestProcessor(unittest.TestCase):
         """Checks creates bot function
         and addition to the database."""
         output_dict = proc.create_bot_db(DB, 10, 10)
-        bot_number = output_dict.keys()[0]
+        bot_number = output_dict['bot number']
 
 
 
