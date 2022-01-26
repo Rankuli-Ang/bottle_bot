@@ -1,16 +1,16 @@
 # bottle_bot
 
-Training project for studying Python web development with WSGI framework Bottle.
 
-In this program, it starts the server, you can creates a bot/bots, 
-to which the client can transmit coordinates for movement. 
 
-How to run:
+## How to run:
+```
+gh repo clone Rankuli-Ang/bottle_bot
 
--download all files
+cd bottle_bot
 
--run main.py
+python3 run.py
+```
 
-You can get information of all commands on http://127.0.0.1:8080/ after runs server.
+Launch the server and check all available commans on http://127.0.0.1:8080/
 
-All output data contains in JSON.
+All output data is contained in JSON
