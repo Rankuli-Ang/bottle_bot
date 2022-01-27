@@ -5,7 +5,8 @@ from src.processor import Processor
 import sqlite3
 import time
 
-proc = Processor()  # It's not good to create proc here, but I can't come up better decision
+db = 'resources/bots.db'
+proc = Processor(db)  # It's not good to create proc here, but I can't come up better decision
 
 
 @route('/')

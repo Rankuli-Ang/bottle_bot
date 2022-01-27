@@ -6,7 +6,8 @@ import time
 class Processor:
     """Processes movements of the bots."""
 
-    def __init__(self):
+    def __init__(self, db):
+        self.db = db
         self.bots = []
 
     def add_bot(self, new_bot_stats: tuple) -> None:
@@ -20,7 +21,7 @@ class Processor:
 
     def add_all_bots(self) -> None:
         """Adds all bot to the proc's list."""
-        conn = sqlite3.connect(r'resources/bots.db')
+        conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         cur.execute('''SELECT * FROM bots''')
         all_bots_stats = cur.fetchall()
@@ -40,7 +41,7 @@ class Processor:
 
     def create_bot_db(self, x: int, y: int) -> dict:
         """Creates new bot."""
-        conn = sqlite3.connect(r'resources/bots.db')
+        conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         cur.execute('''SELECT * FROM bots WHERE id ORDER BY id DESC LIMIT 1  ''')
         last_bot = cur.fetchone()
@@ -57,7 +58,7 @@ class Processor:
 
     def delete_bot_db(self, bot_number: int) -> dict:
         """Deletes bot with given number."""
-        conn = sqlite3.connect(r'resources/bots.db')
+        conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         cur.execute('''SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1 ''', (bot_number,))
         deleting_bot_stats = cur.fetchone()
@@ -73,7 +74,7 @@ class Processor:
 
     def delete_all_bots_db(self) -> dict:
         """Deletes all bots from the database."""
-        conn = sqlite3.connect(r'resources/bots.db')
+        conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         for bot in self.bots:
             if bot.is_moving:
@@ -126,7 +127,7 @@ class Processor:
         """Changes bot coordinates
         with 1 second sleep after every step
         and save it to the database."""
-        conn = sqlite3.connect(r'resources/bots.db')
+        conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         bot.target_x = target_x
         bot.target_y = target_y
