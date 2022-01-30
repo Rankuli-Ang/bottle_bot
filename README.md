@@ -1,6 +1,6 @@
 # bottle_bot
 
-> client-server interaction of abstract moving bot. Developed with 'bottle' web framework.
+> Client-Server interaction of abstract moving bot. Developed with 'bottle' web framework.
 
 ## How to run
 ```
