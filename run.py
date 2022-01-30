@@ -17,7 +17,7 @@ if __name__ == "__main__":
     )''')
     conn.commit()
 
-    routes.proc.add_all_bots()
+    routes.proc.add_all_bots_to_proc()
 
     run(server=PasteServer, host='localhost', port=8080, debug=True)
 

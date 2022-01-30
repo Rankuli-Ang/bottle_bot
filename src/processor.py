@@ -4,13 +4,14 @@ import time
 
 
 class Processor:
-    """Processes movements of the bots."""
+    """Processes movements of the bots and
+    interactions with the database."""
 
     def __init__(self, db):
         self.db = db
         self.bots = []
 
-    def add_bot(self, new_bot_stats: tuple) -> None:
+    def add_bot_to_proc(self, new_bot_stats: tuple) -> None:
         """Adds a bot to the proc list, if it not in list."""
         for bot in self.bots:
             if bot.get_number() == new_bot_stats[0]:
@@ -19,16 +20,16 @@ class Processor:
                       new_bot_stats[3], new_bot_stats[4])
         self.bots.append(new_bot)
 
-    def add_all_bots(self) -> None:
-        """Adds all bot to the proc's list."""
+    def add_all_bots_to_proc(self) -> None:
+        """Adds all bots from the database to the proc's list."""
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         cur.execute('''SELECT * FROM bots''')
         all_bots_stats = cur.fetchall()
         for bot_stats in all_bots_stats:
-            self.add_bot(bot_stats)
+            self.add_bot_to_proc(bot_stats)
 
-    def delete_bot(self, delete_bot_number: int) -> None:
+    def delete_bot_from_proc(self, delete_bot_number: int) -> None:
         """Deletes bot from the proc list."""
         delete_bot = None
         for bot in self.bots:
@@ -39,7 +40,7 @@ class Processor:
             return
         self.bots.remove(delete_bot)
 
-    def create_bot_db(self, x: int, y: int) -> dict:
+    def create_bot(self, x: int, y: int) -> dict:
         """Creates new bot."""
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
@@ -51,13 +52,13 @@ class Processor:
             new_number = 1
         new_bot = Bot(new_number, x, y, x, y)
         new_bot_data = new_bot.stats
-        self.add_bot(new_bot_data)
+        self.add_bot_to_proc(new_bot_data)
         cur.execute('''INSERT INTO bots(id, x,y,target_x,target_y) VALUES(?,?,?,?,?)''', new_bot_data)
         conn.commit()
-        return {'bot': 'is created', 'bot number': new_number}
+        return {'bot': 'is created', 'bot_number': new_number}
 
-    def delete_bot_db(self, bot_number: int) -> dict:
-        """Deletes bot with given number."""
+    def delete_bot(self, bot_number: int) -> dict:
+        """Deletes bot with a given number."""
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         cur.execute('''SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1 ''', (bot_number,))
@@ -67,13 +68,13 @@ class Processor:
         deleting_bot = self.get_current_bot_instance(bot_number)
         if deleting_bot.is_moving:
             return {'ERROR': 'You cannot bot while its moving'}
-        self.delete_bot(bot_number)
+        self.delete_bot_from_proc(bot_number)
         cur.execute('''DELETE FROM bots WHERE id = ?''', (bot_number,))
         conn.commit()
         return {bot_number: 'is deleted'}
 
-    def delete_all_bots_db(self) -> dict:
-        """Deletes all bots from the database."""
+    def delete_all_bots(self) -> dict:
+        """Deletes all bots."""
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         for bot in self.bots:
@@ -84,8 +85,9 @@ class Processor:
         conn.commit()
         return {'list of bots': 'is empty'}
 
-    def get_current_bot_instance(self, searched_bot_number: int):
-        """Returns bot instance with a searched bot number."""
+    def get_current_bot_instance(self, searched_bot_number: int) -> Bot:
+        """Returns bot instance from
+        a proc's list with a searched bot number."""
         for bot in self.bots:
             if bot.get_number() == searched_bot_number:
                 return bot
@@ -98,7 +100,6 @@ class Processor:
 
     def current_bot_is_moving(self, current_bot) -> str:
         """Returns string with a current bot moving status."""
-
         if current_bot.is_moving:
             return 'is moving'
         else:
@@ -106,7 +107,6 @@ class Processor:
 
     def bot_step_x(self, bot) -> None:
         """Changes 'x' coordinate to 1 closer to target."""
-
         if bot.get_x() == bot.get_target_x():
             return
         elif bot.get_x() < bot.get_target_x():
@@ -124,9 +124,8 @@ class Processor:
             bot.y -= 1
 
     def bot_move(self, bot, target_x: int, target_y: int) -> None:
-        """Changes bot coordinates
-        with 1 second sleep after every step
-        and save it to the database."""
+        """Changes bot coordinates in instance and the database
+        with 1 second sleep after every step."""
         conn = sqlite3.connect(self.db)
         cur = conn.cursor()
         bot.target_x = target_x

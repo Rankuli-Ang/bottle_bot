@@ -1,8 +1,7 @@
 
 
 class Bot:
-    """A unit capable of changing coordinates
-    depending on a given target."""
+    """A 'moving' unit. Movement is handled by the processor."""
 
     def __init__(self, number: int, x: int, y: int, target_x: int, target_y: int):
         self._number = number

@@ -13,17 +13,17 @@ proc = Processor(db)  # It's not good to create proc here, but I can't come up b
 def get_tutorial():
     """Displays all commands."""
     data = {"commands": [
-        {'bot/bot_number': 'returns bot statistics'},
-        {'bots': 'returns statistics for all bots'},
-        {'/move/bot_number/target_x/target_y': 'moves bot with a given values'},
-        {'create/x/y': 'creates bot with a given values'},
-        {'delete/bot_number': 'deletes bot with a given number'},
-        {'delete_all': 'deletes all bots (only if everyone is stopped)'}]}
+        {'bot/bot_number': 'returns bot statistics(method=POST)'},
+        {'bots': 'returns statistics for all bots(method=GET)'},
+        {'/move/bot_number/target_x/target_y': 'moves bot with a given values(method=POST)'},
+        {'create/x/y': 'creates bot with a given values(method=POST)'},
+        {'delete/bot_number': 'deletes bot with a given number(method=POST)'},
+        {'delete_all': 'deletes all bots (only if everyone is stopped)(method=GET)'}]}
     return json.dumps(data)
 
 
 @route('/bot/<bot_number:int>', method="POST")
-def get_bot(bot_number):
+def get_bot(bot_number) -> str:
     """Display bot stat with given number."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
@@ -37,7 +37,7 @@ def get_bot(bot_number):
 
 
 @route('/bots')
-def get_bots():  # should I unite get_bot and get_bots to one function?
+def get_bots() -> str:
     """Displays stat for all bots."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
@@ -54,7 +54,7 @@ def get_bots():  # should I unite get_bot and get_bots to one function?
 
 
 @route('/move/<bot_number:int>/<target_x:int>/<target_y:int>', method="POST")
-def move(bot_number, target_x, target_y):
+def move(bot_number, target_x, target_y) -> str:
     """Moves bot with a given values."""
     conn = sqlite3.connect(r'resources/bots.db')
     cur = conn.cursor()
@@ -62,7 +62,7 @@ def move(bot_number, target_x, target_y):
     bot_stats = cur.fetchone()
     if bot_stats is None:
         return json.dumps({'bot': 'is not exist'})
-    proc.add_bot(bot_stats)
+    proc.add_bot_to_proc(bot_stats)
     current_bot = proc.get_current_bot_instance(bot_stats[0])
     if current_bot.is_moving:
         return json.dumps({'bot': proc.current_bot_is_moving(current_bot)})
@@ -71,16 +71,19 @@ def move(bot_number, target_x, target_y):
 
 
 @route('/create/<x:int>/<y:int>', method='POST')
-def create_bot(x, y):
-    return json.dumps(proc.create_bot_db(x, y))
+def create_bot(x, y) -> str:
+    """Creates new bot with a given coordinates."""
+    return json.dumps(proc.create_bot(x, y))
 
 
 @route('/delete/<bot_number:int>', method='POST')
-def delete_bot(bot_number):
-    return json.dumps(proc.delete_bot_db(bot_number))
+def delete_bot(bot_number) -> str:
+    """Deletes bot with a given number."""
+    return json.dumps(proc.delete_bot(bot_number))
 
 
 @route('/delete_all')
-def delete_all_bots():
-    return json.dumps(proc.delete_all_bots_db())
+def delete_all_bots() -> str:
+    """Deletes all bots."""
+    return json.dumps(proc.delete_all_bots())
 

@@ -29,17 +29,16 @@ cur.execute('''INSERT INTO bots(id, x,y,target_x,target_y) VALUES(1, 0, 0, 0, 0)
 conn.commit()
 
 proc = processor.Processor(DB)
-proc.add_all_bots()
+proc.add_all_bots_to_proc()
 
 
 class ProcessorTest(unittest.TestCase):
     """Test class for processor module."""
 
-    def test_create_bot_db(self) -> None:
-        """Checks creates bot function
-        and addition to the database."""
-        output_dict = proc.create_bot_db(10, 10)
-        bot_number = output_dict['bot number']
+    def test_create_bot(self) -> None:
+        """Checks bot creation."""
+        output_dict = proc.create_bot(10, 10)
+        bot_number = output_dict['bot_number']
         new_bot = proc.get_current_bot_instance(bot_number)
         self.assertIn(new_bot, proc.bots)
 
@@ -48,12 +47,12 @@ class ProcessorTest(unittest.TestCase):
         self.assertEqual(new_bot.stats, bot_stats)
 
     def test_move(self) -> None:
-        """Checks correctness of bot movements."""
-        new_bot = proc.create_bot_db(X, Y)
-        bot_number = new_bot['bot number']
+        """Checks correctness of bot movement."""
+        new_bot = proc.create_bot(X, Y)
+        bot_number = new_bot['bot_number']
         cur.execute('''SELECT * FROM bots WHERE id = ? ORDER BY id DESC LIMIT 1  ''', (bot_number,))
         moving_bot_stats = cur.fetchone()
-        proc.add_bot(moving_bot_stats)
+        proc.add_bot_to_proc(moving_bot_stats)
         moving_bot = proc.get_current_bot_instance(moving_bot_stats[0])
         proc.bot_move(moving_bot, TARGET_X, TARGET_Y)
         control_stats = (moving_bot_stats[0], TARGET_X, TARGET_Y, TARGET_X, TARGET_Y)
@@ -66,17 +65,17 @@ class ProcessorTest(unittest.TestCase):
         db_stats = cur.fetchone()
         self.assertEqual(db_stats, control_stats)
 
-    def test_delete_bot_db(self) -> None:
-        """Checks deletion bot from the database."""
-        proc.delete_bot_db(1)
+    def test_delete_bot(self) -> None:
+        """Checks bot deletion."""
+        proc.delete_bot(1)
         cur.execute('''SELECT * FROM bots WHERE id = 1 ORDER BY id DESC LIMIT 1 ''')
         deleted_bot = cur.fetchone()
         self.assertIsNone(deleted_bot)
         self.assertIsNone(proc.get_current_bot_instance(1))
 
-    def test_delete_all_bots_db(self) -> None:
-        """Checks deletion all bots from the database."""
-        proc.delete_all_bots_db()
+    def test_delete_all_bots(self) -> None:
+        """Checks all bots deletion."""
+        proc.delete_all_bots()
         cur.execute('''SELECT * FROM bots''')
         all_data = cur.fetchall()
         self.assertEqual(all_data, [])
